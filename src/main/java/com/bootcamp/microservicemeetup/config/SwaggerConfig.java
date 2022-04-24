@@ -37,8 +37,8 @@ public class SwaggerConfig {
     }
 
     private Contact contact() {
-        return new Contact("Womakerscode Ana Neri",
-                "http://womakerscode.org",
-                "neribia7@gmail.com");
+        return new Contact("Esther Wyse de Lucena",
+                "www.linkedin.com/in/esther-wyse-lucena",
+                "estherlucena@gmail.com");
     }
 }
