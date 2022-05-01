@@ -16,6 +16,8 @@ public interface MeetupService {
 
     Meetup update(Meetup loan);
 
+    void delete(Meetup meetup);
+
     Page<Meetup> find(MeetupFilterDTO filterDTO, Pageable pageable);
 
     Page<Meetup> getRegistrationsByMeetup(Registration registration, Pageable pageable);
