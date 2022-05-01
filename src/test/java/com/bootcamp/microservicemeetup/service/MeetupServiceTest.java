@@ -1,10 +1,12 @@
 package com.bootcamp.microservicemeetup.service;
 
 import com.bootcamp.microservicemeetup.controller.dto.MeetupFilterDTO;
+import com.bootcamp.microservicemeetup.exception.BusinessException;
 import com.bootcamp.microservicemeetup.model.entity.Meetup;
 import com.bootcamp.microservicemeetup.model.entity.Registration;
 import com.bootcamp.microservicemeetup.repository.MeetupRepository;
 import com.bootcamp.microservicemeetup.service.impl.MeetupServiceImpl;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -23,6 +25,8 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @ExtendWith(SpringExtension.class)
 @ActiveProfiles("test")
@@ -97,6 +101,29 @@ public class MeetupServiceTest {
         assertThat(meetup.getRegistration()).isEqualTo(registration());
         assertThat(meetup.getMeetupDate()).isEqualTo("06/06/2022");
         assertThat(meetup.getRegistered()).isEqualTo(true);
+    }
+
+    @Test
+    @DisplayName("Should delete a meetup")
+    public void deleteMeetupTest() {
+        Meetup meetup = createValidMeetup();
+
+        assertDoesNotThrow(() -> meetupService.delete(meetup));
+
+        Mockito.verify(repository, Mockito.times(1)).delete(meetup);
+    }
+
+    @Test
+    @DisplayName("Should throw an exception when try to delete null meetup")
+    public void deleteMeetupTestNull() {
+        Meetup meetup = Meetup.builder().id(null).build();
+
+        Throwable exception = Assertions.catchThrowable( () -> meetupService.delete(meetup));
+        assertThat(exception)
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Meetup cannot be null");
+
+        Mockito.verify(repository, Mockito.never()).delete(meetup);
     }
 
     @Test

@@ -34,6 +34,7 @@ import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Arrays;
 import java.util.Optional;
 
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
@@ -150,6 +151,36 @@ public class MeetupControllerTest {
                 .andExpect(jsonPath("totalElements").value(1))
                 .andExpect(jsonPath("pageable.pageSize").value(20))
                 .andExpect(jsonPath("pageable.pageNumber").value(0));
+    }
+
+    @Test
+    @DisplayName("Should delete a meetup")
+    public void deleteMeetup() throws Exception {
+
+        BDDMockito.given(meetupService
+                        .getById(anyInt()))
+                .willReturn(Optional.of(Meetup.builder().id(11).build()));
+
+        MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders
+                .delete(MEETUP_API.concat("/" + 11))
+                .accept(MediaType.APPLICATION_JSON);
+
+        mockMvc.perform(requestBuilder)
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    @DisplayName("Should return not found when no meetup is found to delete")
+    public void deleteNonExistentMeetupTest() throws Exception {
+        BDDMockito.given(meetupService
+                .getById(anyInt())).willReturn(Optional.empty());
+
+        MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders
+                .delete(MEETUP_API.concat("/" + 1))
+                .accept(MediaType.APPLICATION_JSON);
+
+        mockMvc.perform(requestBuilder)
+                .andExpect(status().isNotFound());
     }
 
 }
