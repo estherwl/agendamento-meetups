@@ -1,13 +1,15 @@
 package com.bootcamp.microservicemeetup.controller;
 
 
+import com.bootcamp.microservicemeetup.controller.dto.MeetupDTO;
+import com.bootcamp.microservicemeetup.controller.dto.MeetupFilterDTO;
 import com.bootcamp.microservicemeetup.controller.resource.MeetupController;
 import com.bootcamp.microservicemeetup.exception.BusinessException;
-import com.bootcamp.microservicemeetup.controller.dto.MeetupDTO;
 import com.bootcamp.microservicemeetup.model.entity.Meetup;
 import com.bootcamp.microservicemeetup.model.entity.Registration;
 import com.bootcamp.microservicemeetup.service.MeetupService;
 import com.bootcamp.microservicemeetup.service.RegistrationService;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,6 +19,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -25,9 +31,11 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
 
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
+import java.util.Arrays;
 import java.util.Optional;
+
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 @ExtendWith(SpringExtension.class)
 @ActiveProfiles("test")
@@ -98,10 +106,9 @@ public class MeetupControllerTest {
     }
 
 
-
     @Test
     @DisplayName("Should return error when try to register a registration already register on a meetup")
-    public void  meetupRegistrationErrorOnCreateMeetupTest() throws Exception {
+    public void meetupRegistrationErrorOnCreateMeetupTest() throws Exception {
 
         MeetupDTO dto = MeetupDTO.builder().registrationAttribute("123").event("Womakerscode Dados").build();
         String json = new ObjectMapper().writeValueAsString(dto);
@@ -124,7 +131,25 @@ public class MeetupControllerTest {
                 .andExpect(status().isBadRequest());
     }
 
+    @Test
+    @DisplayName("Should find a meetup")
+    public void findMeetupTest() throws Exception {
+        Registration registration = Registration.builder().id(11).registration("123").build();
+        Meetup meetup = Meetup.builder().id(11).event("Womakerscode Dados").registration(registration).meetupDate("10/10/2021").build();
 
+        BDDMockito.given(meetupService.find(Mockito.any(MeetupFilterDTO.class), Mockito.any(Pageable.class)))
+                .willReturn(new PageImpl<Meetup>(Arrays.asList(meetup), PageRequest.of(0, 20), 1));
 
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders
+                .get(MEETUP_API)
+                .accept(MediaType.APPLICATION_JSON);
+
+        mockMvc.perform(request)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("content", Matchers.hasSize(1)))
+                .andExpect(jsonPath("totalElements").value(1))
+                .andExpect(jsonPath("pageable.pageSize").value(20))
+                .andExpect(jsonPath("pageable.pageNumber").value(0));
+    }
 
 }
