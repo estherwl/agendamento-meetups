@@ -13,7 +13,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -26,7 +25,6 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @ExtendWith(SpringExtension.class)
 @ActiveProfiles("test")
@@ -55,7 +53,26 @@ public class MeetupServiceTest {
         assertThat(savedMeetup.getEvent()).isEqualTo("Test event");
         assertThat(savedMeetup.getRegistration()).isEqualTo(registration());
         assertThat(savedMeetup.getMeetupDate()).isEqualTo("06/06/2022");
-        assertThat(savedMeetup.getRegistered()).isEqualTo(true);
+        assertThat(savedMeetup.getRegistered()).isEqualTo(false);
+    }
+
+    @Test
+    @DisplayName("Should throw an exception when try to save a meetup already registered")
+    public void saveMeetupAlreadyRegistered() {
+        Meetup meetup = Meetup.builder()
+                .id(100)
+                .event("Test event")
+                .registration(registration())
+                .meetupDate("06/06/2022")
+                .registered(true)
+                .build();
+
+        Throwable exception = Assertions.catchThrowable( () -> meetupService.save(meetup));
+        assertThat(exception)
+                .isInstanceOf(BusinessException.class)
+                .hasMessage("Meetup already created");
+
+        Mockito.verify(repository, Mockito.never()).save(meetup);
     }
 
     @Test
@@ -100,12 +117,25 @@ public class MeetupServiceTest {
         assertThat(meetup.getEvent()).isEqualTo("Test event");
         assertThat(meetup.getRegistration()).isEqualTo(registration());
         assertThat(meetup.getMeetupDate()).isEqualTo("06/06/2022");
-        assertThat(meetup.getRegistered()).isEqualTo(true);
+        assertThat(meetup.getRegistered()).isEqualTo(false);
+    }
+
+    @Test
+    @DisplayName("Should throw an exception when try to delete null meetup")
+    public void updateMeetupNull() {
+        Meetup meetup = Meetup.builder().id(null).build();
+
+        Throwable exception = Assertions.catchThrowable( () -> meetupService.update(meetup));
+        assertThat(exception)
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Meetup cannot be null");
+
+        Mockito.verify(repository, Mockito.never()).save(meetup);
     }
 
     @Test
     @DisplayName("Should delete a meetup")
-    public void deleteMeetupTest() {
+    public void deleteMeetup() {
         Meetup meetup = createValidMeetup();
 
         assertDoesNotThrow(() -> meetupService.delete(meetup));
@@ -115,7 +145,7 @@ public class MeetupServiceTest {
 
     @Test
     @DisplayName("Should throw an exception when try to delete null meetup")
-    public void deleteMeetupTestNull() {
+    public void deleteMeetupNull() {
         Meetup meetup = Meetup.builder().id(null).build();
 
         Throwable exception = Assertions.catchThrowable( () -> meetupService.delete(meetup));
@@ -185,7 +215,7 @@ public class MeetupServiceTest {
                 .event("Test event")
                 .registration(registration())
                 .meetupDate("06/06/2022")
-                .registered(true)
+                .registered(false)
                 .build();
     }
 

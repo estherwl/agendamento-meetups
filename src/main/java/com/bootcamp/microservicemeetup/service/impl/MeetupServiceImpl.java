@@ -1,6 +1,7 @@
 package com.bootcamp.microservicemeetup.service.impl;
 
 import com.bootcamp.microservicemeetup.controller.dto.MeetupFilterDTO;
+import com.bootcamp.microservicemeetup.exception.BusinessException;
 import com.bootcamp.microservicemeetup.model.entity.Meetup;
 import com.bootcamp.microservicemeetup.model.entity.Registration;
 import com.bootcamp.microservicemeetup.repository.MeetupRepository;
@@ -23,6 +24,9 @@ public class MeetupServiceImpl implements MeetupService {
 
     @Override
     public Meetup save(Meetup meetup) {
+        if(meetup.getRegistered()){
+            throw new BusinessException("Meetup already created");
+        }
         return repository.save(meetup);
     }
 
@@ -33,6 +37,9 @@ public class MeetupServiceImpl implements MeetupService {
 
     @Override
     public Meetup update(Meetup loan) {
+        if (loan == null || loan.getId() == null) {
+            throw new IllegalArgumentException("Meetup cannot be null");
+        }
         return repository.save(loan);
     }
 
