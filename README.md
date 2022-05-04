@@ -2,10 +2,9 @@
 
 ## 🤔 O que é o projeto?
 
-Consiste num pequeno microservice que irá ter lado de client e server no momento de se cadastrar num meetup.
+Consiste num pequeno microservice que irá ter lado de client e server no momento de se cadastrar num meetup. 
 
-
-https://user-images.githubusercontent.com/42419543/162650128-1f8ab89f-0235-40a4-ad57-e60741ebf2ec.mp4
+https://agendamento-meetups.azurewebsites.net/swagger-ui/#/registration-controller
 
 ## 💻 Tecnologias utilizadas
 
@@ -21,6 +20,8 @@ https://user-images.githubusercontent.com/42419543/162650128-1f8ab89f-0235-40a4-
 - [x] Deploy no Azure
 
 ### Camada Meetup:
-- [ ] Testes do repository 
-- [ ] Testes do controller
-- [ ] Testes do service
+- [x] Testes do repository 
+- [x] Testes do controller
+- [x] Testes do service
+- [x] Adicionar métodos findById e update no controller
+- [x] Criar método deleteMeetup 
